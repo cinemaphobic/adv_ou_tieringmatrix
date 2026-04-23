@@ -227,7 +227,10 @@
 				sortedMons.forEach(mon => {
                     let peakUsage = 0;
                     let peakDate = "N/A";
-                    availableDates.forEach((date, idx) => {
+					
+					filteredDates.forEach((date) => {
+                        const actualIdx = availableDates.indexOf(date);
+                        
                         const getU = (i) => {
                             if (i < 0) return 0;
                             const d = availableDates[i];
@@ -235,7 +238,8 @@
                             const rec = GLOBAL_DB.history[d][rating].usage.find(x => x.name === mon);
                             return rec ? rec.usage : 0;
                         };
-                        const weighted = ((20 * getU(idx)) + (3 * getU(idx-1)) + (1 * getU(idx-2))) / 24;
+                        
+                        const weighted = ((20 * getU(actualIdx)) + (3 * getU(actualIdx-1)) + (1 * getU(actualIdx-2))) / 24;
                         if (weighted > peakUsage) {
                             peakUsage = weighted;
                             peakDate = date;
@@ -245,7 +249,7 @@
                     const currentTier = CURRENT_ADV_TIERS[mon.toLowerCase()] || "Below NU";
 
                     html += `<tr>
-                        <td class="sticky-col p-0 bg-white border-r-2 border-black z-40 group relative">
+                        <td class="sticky-col p-0 bg-white border-r-2 border-black z-40 hover:z-50 group relative">
                             <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap cursor-help">
                                 <img src="${getIconUrl(mon)}" class="h-[30px] w-auto flex-none object-contain" alt="${mon}">
                                 <span>${mon}</span>
