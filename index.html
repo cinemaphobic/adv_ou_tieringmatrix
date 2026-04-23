@@ -93,6 +93,50 @@
         let GLOBAL_DB = null;
         let availableDates = [];
 
+		const CURRENT_ADV_TIERS = {
+            // Ubers
+            "deoxys": "Uber", "deoxys-attack": "Uber", "deoxys-defense": "Uber", "deoxys-speed": "Uber",
+            "groudon": "Uber", "ho-oh": "Uber", "kyogre": "Uber", "latias": "Uber", "latios": "Uber", 
+            "lugia": "Uber", "mew": "Uber", "mewtwo": "Uber", "rayquaza": "Uber", "wobbuffet": "Uber", "wynaut": "Uber",
+            // OU
+            "aerodactyl": "OU", "blissey": "OU", "breloom": "OU", "celebi": "OU", "charizard": "OU",
+            "claydol": "OU", "cloyster": "OU", "dugtrio": "OU", "flygon": "OU", "forretress": "OU",
+            "gengar": "OU", "gyarados": "OU", "heracross": "OU", "jirachi": "OU", "jolteon": "OU",
+            "magneton": "OU", "medicham": "OU", "metagross": "OU", "milotic": "OU", "moltres": "OU",
+            "porygon2": "OU", "raikou": "OU", "regice": "OU", "salamence": "OU", "skarmory": "OU",
+            "snorlax": "OU", "starmie": "OU", "suicune": "OU", "swampert": "OU", "tyranitar": "OU", "zapdos": "OU",
+            // UUBL
+            "alakazam": "UUBL", "armaldo": "UUBL", "articuno": "UUBL", "blaziken": "UUBL", "chansey": "UUBL",
+            "crobat": "UUBL", "donphan": "UUBL", "dragonite": "UUBL", "dusclops": "UUBL", "entei": "UUBL",
+            "espeon": "UUBL", "exeggutor": "UUBL", "gardevoir": "UUBL", "hariyama": "UUBL", "houndoom": "UUBL",
+            "jynx": "UUBL", "kadabra": "UUBL", "kingdra": "UUBL", "linoone": "UUBL", "machamp": "UUBL",
+            "marowak": "UUBL", "miltank": "UUBL", "regirock": "UUBL", "registeel": "UUBL", "rhydon": "UUBL",
+            "sceptile": "UUBL", "scizor": "UUBL", "slaking": "UUBL", "slowbro": "UUBL", "smeargle": "UUBL",
+            "steelix": "UUBL", "tauros": "UUBL", "typhlosion": "UUBL", "umbreon": "UUBL", "ursaring": "UUBL",
+            "vaporeon": "UUBL", "venusaur": "UUBL", "weezing": "UUBL", "zangoose": "UUBL",
+            // UU
+            "absol": "UU", "aggron": "UU", "ampharos": "UU", "arcanine": "UU", "camerupt": "UU", "clefable": "UU",
+            "cradily": "UU", "electrode": "UU", "exploud": "UU", "feraligatr": "UU", "gligar": "UU", "golduck": "UU",
+            "golem": "UU", "gorebyss": "UU", "granbull": "UU", "grumpig": "UU", "hitmonlee": "UU", "hitmontop": "UU",
+            "hypno": "UU", "jumpluff": "UU", "kabutops": "UU", "kangaskhan": "UU", "lanturn": "UU", "lapras": "UU",
+            "lunatone": "UU", "mantine": "UU", "misdreavus": "UU", "muk": "UU", "nidoking": "UU", "nidoqueen": "UU",
+            "omastar": "UU", "pinsir": "UU", "poliwrath": "UU", "quagsire": "UU", "qwilfish": "UU", "rapidash": "UU",
+            "sandslash": "UU", "scyther": "UU", "sharpedo": "UU", "shiftry": "UU", "solrock": "UU", "tentacruel": "UU",
+            "victreebel": "UU", "vileplume": "UU", "walrein": "UU", "xatu": "UU",
+            // RUBL / RU
+            "altaria": "RU", "azumarill": "RU", "banette": "RU", "crawdaunt": "RU", "electabuzz": "RU", "fearow": "RUBL",
+            "glalie": "RU", "gloom": "RU", "hitmonchan": "RU", "huntail": "RU", "magmar": "RU", "meganium": "RU",
+            "mr-mime": "RU", "ninjask": "RUBL", "persian": "RU", "pidgeot": "RU", "politoed": "RU", "primeape": "RU",
+            "relicanth": "RU", "sableye": "RU", "stantler": "RU", "sudowoodo": "RU", "venomoth": "RU", "whiscash": "RU",
+            // NUBL / NU
+            "arbok": "NU", "bellossom": "NU", "butterfree": "NU", "cacturne": "NU", "castform": "NU", "chimecho": "NU",
+            "corsola": "NU", "dewgong": "NU", "flareon": "NU", "golbat": "NU", "haunter": "NU", "kecleon": "NU",
+            "kingler": "NU", "machoke": "NU", "magcargo": "NU", "metang": "NU", "mightyena": "NU", "minun": "NU",
+            "murkrow": "NU", "noctowl": "NU", "octillery": "NU", "pelipper": "NU", "pidgeotto": "NU", "pikachu": "NU",
+            "piloswine": "NU", "plusle": "NU", "pupitar": "NU", "raticate": "NU", "roselia": "NU", "seaking": "NU",
+            "tangela": "NU", "torkoal": "NU", "tropius": "NU", "vigoroth": "NU", "wailord": "NU"
+        };
+
         window.onload = () => {
             const container = document.getElementById('tieringMatrixContainer');
             container.innerHTML = '<div class="loader m-10"></div><div class="text-xs font-bold text-gray-500 mt-2">Fetching adv_ou_db.json...</div>';
@@ -180,12 +224,36 @@
                 });
                 html += '</tr></thead><tbody>';
 
-                sortedMons.forEach(mon => {
+				sortedMons.forEach(mon => {
+                    let peakUsage = 0;
+                    let peakDate = "N/A";
+                    availableDates.forEach((date, idx) => {
+                        const getU = (i) => {
+                            if (i < 0) return 0;
+                            const d = availableDates[i];
+                            if (!d || !GLOBAL_DB.history[d][rating]?.usage) return 0;
+                            const rec = GLOBAL_DB.history[d][rating].usage.find(x => x.name === mon);
+                            return rec ? rec.usage : 0;
+                        };
+                        const weighted = ((20 * getU(idx)) + (3 * getU(idx-1)) + (1 * getU(idx-2))) / 24;
+                        if (weighted > peakUsage) {
+                            peakUsage = weighted;
+                            peakDate = date;
+                        }
+                    });
+                    
+                    const currentTier = CURRENT_ADV_TIERS[mon.toLowerCase()] || "Below NU";
+
                     html += `<tr>
-                        <td class="sticky-col p-0 bg-white border-r-2 border-black z-40">
-                            <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap">
+                        <td class="sticky-col p-0 bg-white border-r-2 border-black z-40 group relative">
+                            <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap cursor-help">
                                 <img src="${getIconUrl(mon)}" class="h-[30px] w-auto flex-none object-contain" alt="${mon}">
                                 <span>${mon}</span>
+                            </div>
+                            
+                            <div class="absolute left-[95%] top-1/2 -translate-y-1/2 ml-2 hidden group-hover:flex flex-col bg-black text-white text-xs p-3 border-2 border-gray-600 shadow-xl z-50 whitespace-nowrap pointer-events-none">
+                                <span class="font-black text-blue-400 uppercase tracking-widest border-b border-gray-600 mb-1 pb-1">Current Tier: ${currentTier}</span>
+                                <span class="text-gray-300 font-mono mt-1">Peak: <span class="text-white font-bold">${peakUsage.toFixed(2)}%</span> <span class="text-gray-500">(${peakDate})</span></span>
                             </div>
                         </td>`;
 
