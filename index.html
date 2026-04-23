@@ -42,38 +42,45 @@
     </div>
 
     <div id="view-tiering" class="flex-grow flex flex-col min-h-0 max-w-[1600px] w-full mx-auto overflow-hidden">
-        <div class="flex-none retro-box p-4 mb-4 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-gray-50 border-2 border-black">
-            <div>
-                <div class="flex items-center gap-3">
-                    <h2 class="text-lg font-black uppercase">Tiering History Matrix</h2>
+		<div class="flex-none retro-box p-4 mb-4 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between bg-gray-50 border-2 border-black">
+            
+            <div class="max-w-2xl">
+                <div class="flex items-center gap-3 mb-1">
+                    <h2 class="text-lg font-black uppercase tracking-tight">Tiering History Matrix</h2>
                     <span id="tieringEloTag" class="text-lg font-mono font-bold text-blue-800 uppercase">[--]</span>
                 </div>
-                <p class="text-xs text-gray-500 font-bold mt-1">Visualization of the old-school 20/3/1 Weighted Usage Formula relative to the also old-school 3.41% OU Cutoff.</p>
+                <p class="text-xs text-gray-500 font-bold leading-relaxed">Visualization of the old-school 20/3/1 Weighted Usage Formula relative to the also old-school 3.41% OU Cutoff.</p>
             </div>
-            <div class="flex items-center gap-4 flex-wrap">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase text-gray-600">Base ELO:</span>
-                    <select id="ratingSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50" onchange="renderTieringMatrix()">
-                        <option value="1630">1630 (Standard)</option>
-                        <option value="1500">1500 (Low Ladder)</option>
-                        <option value="1760">1760 (Top Ladder)</option>
-                        <option value="0">0 (All)</option>
-                    </select>
-                </div>
+
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 w-full xl:w-auto justify-end">
                 
-				<div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase text-gray-600">Start:</span>
-                    <select id="startMonthSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50" onchange="renderTieringMatrix()"></select>
+                <div class="flex flex-wrap items-center gap-4 bg-gray-200/50 p-2 px-3 border-2 border-gray-300">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Base ELO:</span>
+                        <select id="ratingSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50 cursor-pointer" onchange="renderTieringMatrix()">
+                            <option value="1630">1630 (Standard)</option>
+                            <option value="1500">1500 (Low Ladder)</option>
+                            <option value="1760">1760 (Top Ladder)</option>
+                            <option value="0">0 (All)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Start:</span>
+                        <select id="startMonthSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50 cursor-pointer" onchange="renderTieringMatrix()"></select>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">End:</span>
+                        <select id="endMonthSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50 cursor-pointer" onchange="renderTieringMatrix()"></select>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase text-gray-600">End:</span>
-                    <select id="endMonthSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50" onchange="renderTieringMatrix()"></select>
+
+                <div class="flex items-center gap-3 shrink-0 mt-2 md:mt-0">
+                    <button onclick="renderTieringMatrix()" class="retro-btn px-4 py-2 font-bold uppercase text-xs tracking-wider">Refresh</button>
+                    <button onclick="exportToCSV()" class="retro-btn retro-btn-primary px-4 py-2 font-bold uppercase text-xs tracking-wider">Export CSV</button>
                 </div>
-				
-                <div class="h-6 w-[2px] bg-gray-300 hidden md:block"></div>
-                
-                <button onclick="renderTieringMatrix()" class="retro-btn px-4 py-2 font-bold uppercase text-xs">Refresh</button>
-                <button onclick="exportToCSV()" class="retro-btn retro-btn-primary px-4 py-2 font-bold uppercase text-xs">Export CSV</button>
+
             </div>
         </div>
 
