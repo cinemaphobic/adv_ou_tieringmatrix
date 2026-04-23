@@ -61,6 +61,15 @@
                     </select>
                 </div>
                 
+				<div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase text-gray-600">Start:</span>
+                    <select id="startMonthSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50" onchange="renderTieringMatrix()"></select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase text-gray-600">End:</span>
+                    <select id="endMonthSelect" class="border-2 border-black p-1 font-bold text-sm bg-white text-blue-800 focus:outline-none focus:bg-blue-50" onchange="renderTieringMatrix()"></select>
+                </div>
+				
                 <div class="h-6 w-[2px] bg-gray-300 hidden md:block"></div>
                 
                 <button onclick="renderTieringMatrix()" class="retro-btn px-4 py-2 font-bold uppercase text-xs">Refresh</button>
@@ -91,6 +100,16 @@
                     availableDates = Object.keys(GLOBAL_DB.history).sort();
                     
                     if (availableDates.length > 0) {
+						const startSelect = document.getElementById('startMonthSelect');
+                        const endSelect = document.getElementById('endMonthSelect');
+                        availableDates.forEach(date => {
+                            startSelect.add(new Option(date, date));
+                            endSelect.add(new Option(date, date));
+                        });
+						
+						startSelect.value = availableDates[0];
+                        endSelect.value = availableDates[availableDates.length - 1];
+						
                         const latest = availableDates[availableDates.length - 1];
                         const availableRatings = Object.keys(GLOBAL_DB.history[latest]);
                         const preferred = ['1630', '1695', '1760', '1500', '0'].find(r => availableRatings.includes(r));
@@ -117,7 +136,13 @@
 
             container.innerHTML = '<div class="loader m-10"></div>'; 
 
-            setTimeout(() => {
+			setTimeout(() => {
+                const startMonth = document.getElementById('startMonthSelect').value;
+                const endMonth = document.getElementById('endMonthSelect').value;
+                let filteredDates = availableDates.filter(d => d >= startMonth && d <= endMonth);
+                
+                if (filteredDates.length === 0) filteredDates = availableDates;
+
                 const allMons = new Set();
                 availableDates.forEach(date => {
                     if (GLOBAL_DB.history[date][rating]?.usage) {
@@ -141,24 +166,25 @@
 
                 let html = '<table class="border-collapse w-full">';
                 
-                html += '<thead><tr><th class="sticky-corner p-2 border border-white">MON / DATE</th>';
-                availableDates.forEach(date => {
+                html += '<thead><tr><th class="sticky-corner p-2 border border-white z-50">MON / DATE</th>';
+                
+                filteredDates.forEach(date => {
                     html += `<th class="sticky-row p-1 border-r border-black font-mono text-xs whitespace-nowrap">${date}</th>`;
                 });
                 html += '</tr></thead><tbody>';
 
                 sortedMons.forEach(mon => {
-					html += `<tr>
-                        <td class="sticky-col p-0 bg-white border-r-2 border-black">
+                    html += `<tr>
+                        <td class="sticky-col p-0 bg-white border-r-2 border-black z-40">
                             <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap">
-                                <img src="${getIconUrl(mon)}" class="w-[40px] h-[30px] min-w-[40px] min-h-[30px] flex-none object-contain" alt="${mon}">
+                                <img src="${getIconUrl(mon)}" class="h-[30px] w-auto flex-none object-contain" alt="${mon}">
                                 <span>${mon}</span>
                             </div>
                         </td>`;
-                    
-                    let wasOU = false;
 
-                    availableDates.forEach((date, dateIdx) => {
+                    filteredDates.forEach((date) => {
+                        const actualIdx = availableDates.indexOf(date);
+
                         const getU = (idx) => {
                             if (idx < 0) return 0;
                             const d = availableDates[idx];
@@ -167,20 +193,27 @@
                             return rec ? rec.usage : 0;
                         };
 
-                        const u0 = getU(dateIdx);
-                        const u1 = getU(dateIdx - 1);
-                        const u2 = getU(dateIdx - 2);
+                        const u0 = getU(actualIdx);
+                        const u1 = getU(actualIdx - 1);
+                        const u2 = getU(actualIdx - 2);
                         const weighted = ((20 * u0) + (3 * u1) + (1 * u2)) / 24;
                         
                         const isOU = weighted >= 3.41;
                         let cellClass = isOU ? 'bg-green-100 text-green-900' : 'bg-gray-100 text-gray-400';
                         
                         let borderStyle = 'border-r border-b border-gray-300';
-                        if (dateIdx > 0) {
-                            if (isOU && !wasOU) borderStyle = 'border-2 border-green-600'; 
-                            if (!isOU && wasOU) borderStyle = 'border-2 border-red-600'; 
+                        
+                        let wasOU = false;
+                        if (actualIdx > 0) {
+                            const pu0 = getU(actualIdx - 1);
+                            const pu1 = getU(actualIdx - 2);
+                            const pu2 = getU(actualIdx - 3);
+                            const pWeighted = ((20 * pu0) + (3 * pu1) + (1 * pu2)) / 24;
+                            wasOU = pWeighted >= 3.41;
+                            
+                            if (isOU && !wasOU) borderStyle = 'border-2 border-green-600 z-10 relative'; 
+                            if (!isOU && wasOU) borderStyle = 'border-2 border-red-600 z-10 relative'; 
                         }
-                        wasOU = isOU;
 
                         html += `<td class="matrix-cell ${cellClass} ${borderStyle}" title="${date}: ${weighted.toFixed(2)}%">${weighted.toFixed(1)}%</td>`;
                     });
