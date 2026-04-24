@@ -235,15 +235,28 @@
                     }
                 });
                 
-                const latestDate = availableDates[availableDates.length - 1];
-                const latestUsage = GLOBAL_DB.history[latestDate][rating]?.usage || [];
-                const rankMap = {};
-                latestUsage.forEach(u => rankMap[u.name] = u.rank);
+                const targetDate = filteredDates[filteredDates.length - 1];
+                const targetIdx = availableDates.indexOf(targetDate);
+                const weightedMap = {};
+
+                allMons.forEach(mon => {
+                    const getU = (idx) => {
+                        if (idx < 0) return 0;
+                        const d = availableDates[idx];
+                        if (!d || !GLOBAL_DB.history[d][rating]?.usage) return 0;
+                        const rec = GLOBAL_DB.history[d][rating].usage.find(x => x.name === mon);
+                        return rec ? rec.usage : 0;
+                    };
+                    const u0 = getU(targetIdx);
+                    const u1 = getU(targetIdx - 1);
+                    const u2 = getU(targetIdx - 2);
+                    weightedMap[mon] = ((20 * u0) + (3 * u1) + (1 * u2)) / 24;
+                });
 
                 const sortedMons = Array.from(allMons).sort((a, b) => {
-                    const rankA = rankMap[a] || 9999;
-                    const rankB = rankMap[b] || 9999;
-                    if (rankA !== rankB) return rankA - rankB;
+                    const weightA = weightedMap[a] || 0;
+                    const weightB = weightedMap[b] || 0;
+                    if (weightA !== weightB) return weightB - weightA;
                     return a.localeCompare(b);
                 });
 
