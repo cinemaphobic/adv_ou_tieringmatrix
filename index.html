@@ -354,69 +354,6 @@
                 container.innerHTML = html;
             }, 10);
         }
-
-		function exportToCSV() {
-			if (!GLOBAL_DB) {
-				alert("Please wait for the database to load first.");
-				return;
-			}
-			const rating = document.getElementById('ratingSelect').value;
-			
-			const allMons = new Set();
-			availableDates.forEach(date => {
-				if (GLOBAL_DB.history[date][rating]?.usage) {
-					GLOBAL_DB.history[date][rating].usage.forEach(u => allMons.add(u.name));
-				}
-			});
-			
-			const latestDate = availableDates[availableDates.length - 1];
-			const latestUsage = GLOBAL_DB.history[latestDate][rating]?.usage || [];
-			const rankMap = {};
-			latestUsage.forEach(u => rankMap[u.name] = u.rank);
-
-			const sortedMons = Array.from(allMons).sort((a, b) => {
-				const rankA = rankMap[a] || 9999;
-				const rankB = rankMap[b] || 9999;
-				if (rankA !== rankB) return rankA - rankB;
-				return a.localeCompare(b);
-			});
-
-			let csv = "Icon,Pokemon," + availableDates.join(",") + "\n";
-
-			sortedMons.forEach(mon => {
-				const iconUrl = getIconUrl(mon);
-				const imageFormula = `"=IMAGE(""${iconUrl}"")"`;
-
-				let row = [imageFormula, mon];
-				
-				availableDates.forEach((date, dateIdx) => {
-					const getU = (idx) => {
-						if (idx < 0) return 0;
-						const d = availableDates[idx];
-						if (!d || !GLOBAL_DB.history[d][rating]?.usage) return 0;
-						const rec = GLOBAL_DB.history[d][rating].usage.find(x => x.name === mon);
-						return rec ? rec.usage : 0;
-					};
-
-					const u0 = getU(dateIdx);
-					const u1 = getU(dateIdx - 1);
-					const u2 = getU(dateIdx - 2);
-					const weighted = ((20 * u0) + (3 * u1) + (1 * u2)) / 24;
-					
-					row.push(weighted.toFixed(2)); 
-				});
-				csv += row.join(",") + "\n";
-			});
-
-			const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-			const link = document.createElement("a");
-			link.href = URL.createObjectURL(blob);
-			link.download = `ADV_OU_Tiering_${rating === '0' ? 'ALL' : rating}.csv`;
-			link.style.display = 'none';
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-		}
         
         let deepDiveChartInstance = null;
 
