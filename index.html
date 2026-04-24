@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADV OU Tiering History</title>
     <script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Core Styles */
         body { font-family: 'Courier New', Courier, monospace; background-color: #e5e7eb; }
@@ -94,6 +95,27 @@
 
         <div class="flex-grow retro-box bg-white overflow-auto relative min-h-0" id="tieringMatrixContainer">
             <div class="flex items-center justify-center h-full text-gray-400 font-bold uppercase tracking-widest">Load Database to View Matrix</div>
+        </div>
+    </div>
+	
+	<div id="deepDiveModal" class="fixed inset-0 bg-black/80 z-[100] hidden items-center justify-center p-4 md:p-10 backdrop-blur-sm">
+        <div class="retro-box w-full max-w-5xl bg-white flex flex-col h-full max-h-[800px] shadow-2xl">
+            
+            <div class="flex items-center justify-between bg-gray-200 border-b-2 border-black p-4">
+                <div class="flex items-center gap-4">
+                    <img id="modalSprite" src="" class="h-[40px] w-auto object-contain" alt="">
+                    <div>
+                        <h3 id="modalTitle" class="text-xl font-black uppercase tracking-widest text-black leading-none"></h3>
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1 block">Historical Usage Curve</span>
+                    </div>
+                    <span id="modalTier" class="text-sm font-bold px-3 py-1 bg-black text-white ml-2 border-2 border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"></span>
+                </div>
+                <button onclick="closeDeepDive()" class="retro-btn px-4 py-2 font-black text-sm uppercase bg-red-500 text-white hover:bg-red-600 transition-colors">Close [X]</button>
+            </div>
+            
+            <div class="p-6 flex-grow relative w-full h-full bg-gray-50">
+                <canvas id="deepDiveChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -265,11 +287,11 @@
                     const currentTier = CURRENT_ADV_TIERS[mon.toLowerCase()] || "Below NU";
 
 					html += `<tr>
-						<td class="sticky-col p-0 bg-white border-r-2 border-black align-middle hover:z-50 min-w-[160px]">    
-                        
-                            <div class="relative group w-full h-full flex items-center">
+						<td class="sticky-col p-0 bg-white border-r-2 border-black align-middle hover:z-50 min-w-[160px]">
+						
+							<div class="relative group w-full h-full flex items-center z-40 hover:z-50 cursor-pointer hover:bg-gray-100 transition-colors" onclick="openDeepDive('${mon}')">
                                 
-                                <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap cursor-help">
+                                <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap">				
                                     <img src="${getIconUrl(mon)}" class="h-[30px] w-auto flex-none object-contain" alt="${mon}">
                                     <span>${mon}</span>
                                 </div>
@@ -280,6 +302,7 @@
                                 </div>
                                 
                             </div>
+							
                         </td>`;
 
                     filteredDates.forEach((date) => {
@@ -388,6 +411,121 @@
 			document.body.removeChild(link);
 		}
         
+        let deepDiveChartInstance = null;
+
+        function openDeepDive(mon) {
+            const modal = document.getElementById('deepDiveModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            document.getElementById('modalSprite').src = getIconUrl(mon);
+            document.getElementById('modalTitle').innerText = mon;
+            document.getElementById('modalTier').innerText = CURRENT_ADV_TIERS[mon.toLowerCase()] || "Below NU";
+            
+            const startMonth = document.getElementById('startMonthSelect').value;
+            const endMonth = document.getElementById('endMonthSelect').value;
+            const rating = document.getElementById('ratingSelect').value;
+            
+            let filteredDates = availableDates.filter(d => d >= startMonth && d <= endMonth);
+            if (filteredDates.length === 0) filteredDates = availableDates;
+            
+            const chartData = [];
+            const cutoffData = [];
+            
+            filteredDates.forEach(date => {
+                const actualIdx = availableDates.indexOf(date);
+                const getU = (idx) => {
+                    if (idx < 0) return 0;
+                    const d = availableDates[idx];
+                    if (!d || !GLOBAL_DB.history[d][rating]?.usage) return 0;
+                    const rec = GLOBAL_DB.history[d][rating].usage.find(x => x.name === mon);
+                    return rec ? rec.usage : 0;
+                };
+                
+                const weighted = ((20 * getU(actualIdx)) + (3 * getU(actualIdx-1)) + (1 * getU(actualIdx-2))) / 24;
+                chartData.push(weighted.toFixed(2));
+                
+                cutoffData.push(3.41);
+            });
+            
+            const ctx = document.getElementById('deepDiveChart').getContext('2d');
+            
+            if (deepDiveChartInstance) deepDiveChartInstance.destroy();
+            
+            Chart.defaults.font.family = "'Courier New', Courier, monospace";
+            Chart.defaults.font.weight = 'bold';
+            Chart.defaults.color = '#374151';
+
+            deepDiveChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: filteredDates,
+                    datasets: [
+                        {
+                            label: 'Weighted Usage %',
+                            data: chartData,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#2563eb',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'OU Cutoff (3.41%)',
+                            data: cutoffData,
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                            fill: false,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.9)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            padding: 12,
+                            cornerRadius: 0,
+                            callbacks: {
+                                label: function(context) { return context.dataset.label + ': ' + context.parsed.y + '%'; }
+                            }
+                        },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#e5e7eb' },
+                            ticks: { callback: function(value) { return value + '%'; } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 12 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function closeDeepDive() {
+            const modal = document.getElementById('deepDiveModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+		
         function formatNameForPokesprite(name) { 
             return name.toLowerCase().replace(/[^a-z0-9]/g, ''); 
         }
