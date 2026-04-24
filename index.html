@@ -233,8 +233,8 @@
 
                 let html = '<table class="border-collapse w-full">';
                 
-                html += '<thead><tr><th class="sticky-corner p-2 border border-white z-50">MON / DATE</th>';
-                
+				html += '<thead><tr><th class="sticky-corner p-2 border border-white z-50 whitespace-nowrap min-w-[160px]">MON / DATE</th>';   
+				
                 filteredDates.forEach(date => {
                     html += `<th class="sticky-row p-1 border-r border-black font-mono text-xs whitespace-nowrap">${date}</th>`;
                 });
@@ -265,8 +265,8 @@
                     const currentTier = CURRENT_ADV_TIERS[mon.toLowerCase()] || "Below NU";
 
 					html += `<tr>
-                        <td class="sticky-col p-0 bg-white border-r-2 border-black align-middle hover:z-50">
-                            
+						<td class="sticky-col p-0 bg-white border-r-2 border-black align-middle hover:z-50 min-w-[160px]">    
+                        
                             <div class="relative group w-full h-full flex items-center">
                                 
                                 <div class="px-2 py-1 flex items-center gap-2 font-bold text-sm whitespace-nowrap cursor-help">
